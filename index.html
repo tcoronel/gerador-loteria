@@ -132,6 +132,11 @@ function preencherQtd(id, min, max) {
 window.onload = () => {
   preencherQtd('qtdMega',6,15);
   preencherQtd('qtdLoto',15,20);
+
+  // valores padrão selecionados
+  document.getElementById('qtdMega').value = 6;
+  document.getElementById('qtdLoto').value = 15;
+
   atualizarLista();
 };
 
