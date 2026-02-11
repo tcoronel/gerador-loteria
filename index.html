@@ -82,12 +82,28 @@
 
   <div class="container">
     <div class="controls">
-      <button onclick="gerarMega()">Gerar Mega-Sena</button>
-      <button onclick="gerarLoto()">Gerar Lotofácil</button>
-      <button class="secondary" onclick="salvarAposta()">Salvar Aposta</button>
-      <button class="warning" onclick="exportarPDF()">Exportar PDF</button>
-      <button class="danger" onclick="limparTodas()">Limpar Todas</button>
-    </div>
+
+  <div>
+  <button onclick="gerarMega()">Mega-Sena</button><br>
+  Min:
+  <select id="minMega"></select>
+  Max:
+  <select id="maxMega"></select>
+</div>
+
+<div>
+  <button onclick="gerarLoto()">Lotofácil</button><br>
+  Min:
+  <select id="minLoto"></select>
+  Max:
+  <select id="maxLoto"></select>
+</div>
+
+<div style="display:flex; flex-direction:column; justify-content:flex-end;">
+  <button class="secondary" onclick="salvarAposta()">Salvar Aposta</button>
+  <button class="warning" onclick="exportarPDF()">Exportar PDF</button>
+  <button class="danger" onclick="limparTodas()">Limpar Todas</button>
+</div>
 
     <div class="result" id="resultado">Nenhuma aposta gerada</div>
 
@@ -101,10 +117,33 @@
   </footer>
 
   <script>
+     
     const STORAGE_KEY = 'apostas_loteria';
     let apostaAtual = '';
     let apostasSalvas = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
+function preencherSelect(id, max) {
+  const select = document.getElementById(id);
+  for (let i = 1; i <= max; i++) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = i;
+    select.appendChild(opt);
+  }
+}
+
+window.onload = () => {
+  preencherSelect('minMega',60);
+  preencherSelect('maxMega',60);
+  preencherSelect('minLoto',25);
+  preencherSelect('maxLoto',25);
+
+  document.getElementById('minMega').value = 1;
+  document.getElementById('maxMega').value = 60;
+  document.getElementById('minLoto').value = 1;
+  document.getElementById('maxLoto').value = 25;
+};
+    
     function salvarStorage() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(apostasSalvas));
     }
@@ -118,16 +157,20 @@
     }
 
     function gerarMega() {
-      const nums = gerarNumeros(6, 60);
-      apostaAtual = `Mega-Sena: ${nums.join(' - ')}`;
-      document.getElementById('resultado').innerText = apostaAtual;
-    }
+  const min = parseInt(document.getElementById('minMega').value);
+  const max = parseInt(document.getElementById('maxMega').value);
+  const nums = gerarNumeros(6, max).filter(n => n >= min);
+  apostaAtual = `Mega-Sena: ${nums.join(' - ')}`;
+  document.getElementById('resultado').innerText = apostaAtual;
+}
 
     function gerarLoto() {
-      const nums = gerarNumeros(15, 25);
-      apostaAtual = `Lotofácil: ${nums.join(' - ')}`;
-      document.getElementById('resultado').innerText = apostaAtual;
-    }
+  const min = parseInt(document.getElementById('minLoto').value);
+  const max = parseInt(document.getElementById('maxLoto').value);
+  const nums = gerarNumeros(15, max).filter(n => n >= min);
+  apostaAtual = `Lotofácil: ${nums.join(' - ')}`;
+  document.getElementById('resultado').innerText = apostaAtual;
+}
 
     function salvarAposta() {
       if (!apostaAtual) {
@@ -198,3 +241,4 @@
   </script>
 </body>
 </html>
+
