@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gerador de Apostas - Mega-Sena e Lotofácil</title>
+
+  <meta name="description" content="Gerador online gratuito de números da Mega-Sena e Lotofácil. Gere, salve e exporte suas apostas em PDF.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-SEU_ID_AQUI"
+    crossorigin="anonymous"></script>
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 15px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background: #007bff;
+      color: #fff;
+    }
+    button.secondary {
+      background: #28a745;
+    }
+    button.warning {
+      background: #ffc107;
+      color: #000;
+    }
+    button.danger {
+      background: #dc3545;
+    }
+    .result {
+      font-size: 18px;
+      margin: 15px 0;
+      font-weight: bold;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      background: #f1f1f1;
+      margin-bottom: 5px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🎲 Gerador de Números da Loteria</h1>
+
+  <div class="container">
+    <div class="controls">
+      <button onclick="gerarMega()">Gerar Mega-Sena</button>
+      <button onclick="gerarLoto()">Gerar Lotofácil</button>
+      <button class="secondary" onclick="salvarAposta()">Salvar Aposta</button>
+      <button class="warning" onclick="exportarPDF()">Exportar PDF</button>
+      <button class="danger" onclick="limparTodas()">Limpar Todas</button>
+    </div>
+
+    <div class="result" id="resultado">Nenhuma aposta gerada</div>
+
+    <h3>Apostas Salvas</h3>
+    <ul id="listaApostas"></ul>
+  </div>
+
+  <footer style="margin-top:30px; text-align:center; font-size:14px; color:#666;">
+    <p>Este site não possui vínculo com a Caixa Econômica Federal.</p>
+    <p><a href="politica-privacidade.html">Política de Privacidade</a></p>
+  </footer>
+
+  <script>
+    const STORAGE_KEY = 'apostas_loteria';
+    let apostaAtual = '';
+    let apostasSalvas = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+    function salvarStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(apostasSalvas));
+    }
+
+    function gerarNumeros(qtd, max) {
+      const numeros = new Set();
+      while (numeros.size < qtd) {
+        numeros.add(Math.floor(Math.random() * max) + 1);
+      }
+      return Array.from(numeros).sort((a, b) => a - b);
+    }
+
+    function gerarMega() {
+      const nums = gerarNumeros(6, 60);
+      apostaAtual = `Mega-Sena: ${nums.join(' - ')}`;
+      document.getElementById('resultado').innerText = apostaAtual;
+    }
+
+    function gerarLoto() {
+      const nums = gerarNumeros(15, 25);
+      apostaAtual = `Lotofácil: ${nums.join(' - ')}`;
+      document.getElementById('resultado').innerText = apostaAtual;
+    }
+
+    function salvarAposta() {
+      if (!apostaAtual) {
+        alert('Gere uma aposta primeiro!');
+        return;
+      }
+
+      const dataHora = new Date().toLocaleString('pt-BR');
+      apostasSalvas.push(`${apostaAtual} | ${dataHora}`);
+      salvarStorage();
+      atualizarLista();
+    }
+
+    function excluirAposta(index) {
+      apostasSalvas.splice(index, 1);
+      salvarStorage();
+      atualizarLista();
+    }
+
+    function limparTodas() {
+      if (!confirm('Deseja apagar todas as apostas?')) return;
+      apostasSalvas = [];
+      salvarStorage();
+      atualizarLista();
+    }
+
+    function atualizarLista() {
+      const ul = document.getElementById('listaApostas');
+      ul.innerHTML = '';
+      apostasSalvas.forEach((aposta, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          ${aposta}
+          <button class="danger" onclick="excluirAposta(${index})">Excluir</button>
+        `;
+        ul.appendChild(li);
+      });
+    }
+
+    function exportarPDF() {
+      if (apostasSalvas.length === 0) {
+        alert('Nenhuma aposta para exportar!');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(16);
+      doc.text('Apostas Salvas - Loteria', 10, 15);
+
+      doc.setFontSize(11);
+      let y = 25;
+
+      apostasSalvas.forEach((aposta, index) => {
+        if (y > 280) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(`${index + 1}. ${aposta}`, 10, y);
+        y += 8;
+      });
+
+      doc.save('apostas-loteria.pdf');
+    }
+
+    atualizarLista();
+  </script>
+</body>
+</html>
