@@ -81,22 +81,19 @@
   <h1>🎲 Gerador de Números da Loteria</h1>
 
   <div class="container">
-    <div class="controls">
+  
+  <div class="controls">
 
   <div>
   <button onclick="gerarMega()">Mega-Sena</button><br>
-  Min:
-  <select id="minMega"></select>
-  Max:
-  <select id="maxMega"></select>
+  Qtd:
+  <select id="qtdMega"></select>
 </div>
 
 <div>
   <button onclick="gerarLoto()">Lotofácil</button><br>
-  Min:
-  <select id="minLoto"></select>
-  Max:
-  <select id="maxLoto"></select>
+  Qtd:
+  <select id="qtdLoto"></select>
 </div>
 
 <div style="display:flex; flex-direction:column; justify-content:flex-end;">
@@ -122,15 +119,22 @@
     let apostaAtual = '';
     let apostasSalvas = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
-function preencherSelect(id, max) {
+function preencherQtd(id, min, max) {
   const select = document.getElementById(id);
-  for (let i = 1; i <= max; i++) {
+  for (let i = min; i <= max; i++) {
     const opt = document.createElement('option');
     opt.value = i;
     opt.textContent = i;
     select.appendChild(opt);
   }
 }
+
+window.onload = () => {
+  preencherQtd('qtdMega',6,15);
+  preencherQtd('qtdLoto',15,20);
+  atualizarLista();
+};
+
 
 window.onload = () => {
   preencherSelect('minMega',60);
@@ -156,19 +160,17 @@ window.onload = () => {
       return Array.from(numeros).sort((a, b) => a - b);
     }
 
-    function gerarMega() {
-  const min = parseInt(document.getElementById('minMega').value);
-  const max = parseInt(document.getElementById('maxMega').value);
-  const nums = gerarNumeros(6, max).filter(n => n >= min);
-  apostaAtual = `Mega-Sena: ${nums.join(' - ')}`;
+  function gerarMega() {
+  const qtd = parseInt(document.getElementById('qtdMega').value);
+  const nums = gerarNumeros(qtd, 60);
+  apostaAtual = `Mega-Sena (${qtd} números): ${nums.join(' - ')}`;
   document.getElementById('resultado').innerText = apostaAtual;
 }
 
-    function gerarLoto() {
-  const min = parseInt(document.getElementById('minLoto').value);
-  const max = parseInt(document.getElementById('maxLoto').value);
-  const nums = gerarNumeros(15, max).filter(n => n >= min);
-  apostaAtual = `Lotofácil: ${nums.join(' - ')}`;
+  function gerarLoto() {
+  const qtd = parseInt(document.getElementById('qtdLoto').value);
+  const nums = gerarNumeros(qtd, 25);
+  apostaAtual = `Lotofácil (${qtd} números): ${nums.join(' - ')}`;
   document.getElementById('resultado').innerText = apostaAtual;
 }
 
@@ -241,4 +243,5 @@ window.onload = () => {
   </script>
 </body>
 </html>
+
 
